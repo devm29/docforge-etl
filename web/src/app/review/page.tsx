@@ -3,7 +3,7 @@
 import { ChevronLeft, Inbox, Loader2 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
-import { EmptyState } from "@/components/empty-state"
+import { EmptyState, LoadError } from "@/components/empty-state"
 import { Toolbar } from "@/components/page-header"
 import { ReviewDetail } from "@/components/review/review-detail"
 import { Segmented } from "@/components/segmented"
@@ -73,7 +73,9 @@ export default function ReviewPage() {
               {status === "pending" ? " below the confidence threshold or failing validation" : ""}
             </p>
           </div>
-          {reviews.isLoading ? (
+          {reviews.isError && items.length === 0 ? (
+            <LoadError what="the review queue" error={reviews.error} />
+          ) : reviews.isLoading ? (
             <div className="space-y-2 px-4">
               {Array.from({ length: 4 }, (_, i) => (
                 <Skeleton key={i} className="h-14 rounded-lg" />

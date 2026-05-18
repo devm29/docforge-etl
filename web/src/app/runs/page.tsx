@@ -3,7 +3,7 @@
 import { Workflow } from "lucide-react"
 import { useState } from "react"
 
-import { EmptyState } from "@/components/empty-state"
+import { EmptyState, LoadError } from "@/components/empty-state"
 import { PageTitle, Toolbar } from "@/components/page-header"
 import { RunPipelineButton } from "@/components/run-pipeline-button"
 import { RunRow } from "@/components/runs-list"
@@ -16,7 +16,7 @@ const PAGE_SIZE = 25
 
 export default function RunsPage() {
   const [offset, setOffset] = useState(0)
-  const { data, isLoading } = useRuns(offset)
+  const { data, isLoading, isError, error } = useRuns(offset)
 
   return (
     <>
@@ -29,7 +29,9 @@ export default function RunsPage() {
           subtitle="Each run scans the source, diffs fingerprints and processes only what changed."
         />
         <Card className="gap-0 overflow-hidden rounded-xl p-0 shadow-[var(--shadow-xs)]">
-          {isLoading ? (
+          {isError && !data ? (
+            <LoadError what="runs" error={error} />
+          ) : isLoading ? (
             <div className="space-y-3 p-4">
               {Array.from({ length: 5 }, (_, i) => (
                 <Skeleton key={i} className="h-10" />

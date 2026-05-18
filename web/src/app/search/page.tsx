@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 
-import { EmptyState } from "@/components/empty-state"
+import { EmptyState, LoadError } from "@/components/empty-state"
 import { PageTitle, Toolbar } from "@/components/page-header"
 import { SearchField } from "@/components/search-field"
 import { Segmented } from "@/components/segmented"
@@ -70,6 +70,8 @@ export default function SearchPage() {
             ))}
           </div>
         ) : null}
+
+        {searching && results.isError && !results.data ? <LoadError what="search results" error={results.error} /> : null}
 
         {results.data && searching ? (
           results.data.hits.length === 0 ? (

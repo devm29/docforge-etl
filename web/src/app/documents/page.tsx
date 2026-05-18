@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, FileSearch, FileSpreadsheet, FileText, FileT
 import Link from "next/link"
 import { useState } from "react"
 
-import { EmptyState } from "@/components/empty-state"
+import { EmptyState, LoadError } from "@/components/empty-state"
 import { PageTitle, Toolbar } from "@/components/page-header"
 import { RunPipelineButton } from "@/components/run-pipeline-button"
 import { SearchField } from "@/components/search-field"
@@ -40,7 +40,7 @@ export default function DocumentsPage() {
   const [query, setQuery] = useState("")
   const [offset, setOffset] = useState(0)
   const filter = useDebouncedValue(query.trim())
-  const { data, isLoading } = useDocuments({
+  const { data, isLoading, isError, error } = useDocuments({
     offset,
     ...(kind === "all" ? {} : { kind }),
     ...(filter ? { q: filter } : {}),
@@ -150,6 +150,7 @@ export default function DocumentsPage() {
                   })}
             </TableBody>
           </Table>
+          {isError && !data ? <LoadError what="documents" error={error} /> : null}
           {data && data.items.length === 0 ? (
             <EmptyState
               icon={FileSearch}
