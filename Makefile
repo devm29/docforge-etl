@@ -2,7 +2,7 @@ SHELL := /bin/bash
 BACKEND := backend
 WEB := web
 PY := $(BACKEND)/.venv/bin
-PYTHON ?= python3.13
+PYTHON ?= python3.12
 
 .PHONY: help install infra infra-stop migrate seed corpus api worker web dev run lint typecheck test build check up down clean
 
@@ -64,7 +64,7 @@ test: ## pytest (needs PostgreSQL) and vitest
 build: ## Production build of the web app
 	cd $(WEB) && pnpm build
 
-check: lint typecheck test build ## Everything CI runs
+check: lint typecheck test build ## Lint, typecheck, test and build in one go
 
 up: ## Run the full stack with Docker Compose
 	docker compose up --build -d

@@ -70,7 +70,7 @@ async def _ensure_database(url: str) -> bool:
 async def database_url() -> AsyncIterator[str]:
     if not await _ensure_database(TEST_DATABASE_URL):
         message = "PostgreSQL with pgvector is not reachable; set TEST_DATABASE_URL"
-        if os.environ.get("CI", "").lower() in {"1", "true"}:
+        if os.environ.get("REQUIRE_TEST_DATABASE", "").lower() in {"1", "true"}:
             pytest.fail(message)
         pytest.skip(message)
     config = Config(str(BACKEND_ROOT / "alembic.ini"))
