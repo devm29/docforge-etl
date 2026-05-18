@@ -9,7 +9,7 @@ from pathlib import Path
 
 from sqlalchemy import select, text
 
-from docforge.config import BACKEND_ROOT, Settings, get_settings
+from docforge.config import Settings, get_settings
 from docforge.container import Container, build_container
 from docforge.corpus.generator import amend_invoice, generate_corpus
 from docforge.db.models import Base, Document, ExtractionField, ReviewItem
@@ -72,7 +72,7 @@ def migrate(settings: Settings) -> None:
     from alembic import command
     from alembic.config import Config
 
-    config = Config(str(BACKEND_ROOT / "alembic.ini"))
+    config = Config(str(settings.alembic_config))
     config.set_main_option("sqlalchemy.url", settings.database_url)
     command.upgrade(config, "head")
 

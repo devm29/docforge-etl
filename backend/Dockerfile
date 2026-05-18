@@ -18,6 +18,7 @@ COPY backend/alembic ./alembic
 COPY sample-corpus /app/sample-corpus
 
 ENV DATA_DIR=/data \
+    ALEMBIC_CONFIG=/app/alembic.ini \
     CORPUS_DIR=/app/sample-corpus \
     FS_SOURCE_ROOT=/data/inbox
 

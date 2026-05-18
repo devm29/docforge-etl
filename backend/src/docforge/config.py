@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     # Bearer token -> principal name. Without tokens, writes are only accepted from loopback.
     api_tokens: dict[str, str] = Field(default_factory=dict)
 
+    # The source tree's alembic.ini by default; an installed package (the Docker image) has no
+    # source tree next to it, so the image points this at its own copy.
+    alembic_config: Path = BACKEND_ROOT / "alembic.ini"
+
     data_dir: Path = PROJECT_ROOT / "data"
     corpus_dir: Path = PROJECT_ROOT / "sample-corpus"
 
