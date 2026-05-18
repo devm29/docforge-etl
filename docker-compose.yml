@@ -13,7 +13,8 @@ x-backend: &backend
     LLM_PROVIDER: ${LLM_PROVIDER:-auto}
     ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     EXTRACTION_MODEL: ${EXTRACTION_MODEL:-claude-opus-5-5}
-    S3_ENDPOINT_URL: http://minio:9000
+    # Local S3 stand-in (moto). These are throwaway dev credentials, not real AWS keys.
+    S3_ENDPOINT_URL: http://s3:5000
     S3_BUCKET: docforge-inbox
     S3_ACCESS_KEY_ID: docforge
     S3_SECRET_ACCESS_KEY: docforge-secret
@@ -24,6 +25,8 @@ x-backend: &backend
       condition: service_healthy
     redis:
       condition: service_healthy
+    s3-seed:
+      condition: service_completed_successfully
 
 services:
   postgres:
@@ -55,31 +58,31 @@ services:
       timeout: 3s
       retries: 20
 
-  minio:
-    image: minio/minio:latest
-    command: server /data
-    environment:
-      MINIO_ROOT_USER: docforge
-      MINIO_ROOT_PASSWORD: docforge-secret
-    volumes:
-      - minio-data:/data
+  s3:
+    # In-memory S3 API (moto). The bucket is recreated by s3-seed whenever the stack starts.
+    image: motoserver/moto:5.2.5
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:5000/moto-api/"]
       interval: 5s
       timeout: 3s
       retries: 20
 
-  minio-seed:
-    image: minio/mc:latest
+  s3-seed:
+    image: amazon/aws-cli:2.39.6
     depends_on:
-      minio:
+      s3:
         condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: docforge
+      AWS_SECRET_ACCESS_KEY: docforge-secret
+      AWS_DEFAULT_REGION: us-east-1
     volumes:
       - ./sample-corpus:/corpus:ro
-    entrypoint: >
-      sh -c "mc alias set local http://minio:9000 docforge docforge-secret &&
-             mc mb --ignore-existing local/docforge-inbox &&
-             mc mirror --overwrite /corpus local/docforge-inbox"
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        aws --endpoint-url http://s3:5000 s3 mb s3://docforge-inbox 2>/dev/null;
+        aws --endpoint-url http://s3:5000 s3 sync --only-show-errors /corpus s3://docforge-inbox
     restart: "no"
 
   api:
@@ -124,5 +127,4 @@ services:
 
 volumes:
   postgres-data:
-  minio-data:
   docforge-data:
