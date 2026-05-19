@@ -52,7 +52,7 @@ export default function DocumentsPage() {
       <Toolbar title="Documents">
         <RunPipelineButton />
       </Toolbar>
-      <main className="mx-auto w-full max-w-6xl space-y-6 px-6 py-8">
+      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
         <PageTitle
           title="Documents"
           subtitle={data ? `${data.total} documents tracked by content hash` : "Loading documents"}
@@ -64,7 +64,7 @@ export default function DocumentsPage() {
               setOffset(0)
             }}
             placeholder="Filter by path"
-            className="w-64"
+            className="w-full sm:w-64"
           />
         </PageTitle>
         <Segmented
@@ -81,13 +81,13 @@ export default function DocumentsPage() {
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="h-10 w-[46%] pl-5 text-[12px] font-medium text-muted-foreground">Name</TableHead>
-                <TableHead className="h-10 w-[22%] text-[12px] font-medium text-muted-foreground">Extraction</TableHead>
-                <TableHead className="h-10 w-[14%] text-[12px] font-medium text-muted-foreground">Confidence</TableHead>
-                <TableHead className="h-10 w-[7%] text-right text-[12px] font-medium text-muted-foreground">
+                <TableHead className="h-10 w-[60%] pl-5 md:w-[46%] text-[12px] font-medium text-muted-foreground">Name</TableHead>
+                <TableHead className="h-10 w-[40%] pr-5 text-[12px] md:w-[22%] md:pr-2 font-medium text-muted-foreground">Extraction</TableHead>
+                <TableHead className="hidden h-10 w-[14%] text-[12px] md:table-cell font-medium text-muted-foreground">Confidence</TableHead>
+                <TableHead className="hidden h-10 w-[7%] text-right md:table-cell text-[12px] font-medium text-muted-foreground">
                   Version
                 </TableHead>
-                <TableHead className="h-10 w-[11%] pr-5 text-right text-[12px] font-medium text-muted-foreground">
+                <TableHead className="hidden h-10 w-[11%] pr-5 text-right md:table-cell text-[12px] font-medium text-muted-foreground">
                   Updated
                 </TableHead>
               </TableRow>
@@ -120,8 +120,8 @@ export default function DocumentsPage() {
                             </span>
                           </Link>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
+                        <TableCell className="pr-5 md:pr-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             {doc.status === "failed" ? (
                               <StatusBadge status="failed">Failed to process</StatusBadge>
                             ) : doc.extraction_status ? (
@@ -136,13 +136,13 @@ export default function DocumentsPage() {
                             ) : null}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {doc.average_confidence !== null ? <ConfidenceMeter value={doc.average_confidence} /> : null}
                         </TableCell>
-                        <TableCell className="text-right text-[13px] tabular-nums">
+                        <TableCell className="hidden text-right text-[13px] tabular-nums md:table-cell">
                           {doc.version_no ? `v${doc.version_no}` : "-"}
                         </TableCell>
-                        <TableCell className="pr-5 text-right text-[13px] text-muted-foreground">
+                        <TableCell className="hidden pr-5 text-right text-[13px] text-muted-foreground md:table-cell">
                           {formatRelative(doc.updated_at)}
                         </TableCell>
                       </TableRow>

@@ -68,7 +68,7 @@ export function PageTitle({ title, subtitle, children }: { title: string; subtit
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h2 ref={ref} className="text-[28px] leading-[34px] font-semibold tracking-tight">
+        <h2 ref={ref} className="font-heading text-[30px] leading-[36px] font-semibold">
           {title}
         </h2>
         {subtitle ? <p className="mt-1 text-[13px] text-muted-foreground">{subtitle}</p> : null}

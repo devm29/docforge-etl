@@ -115,7 +115,7 @@ export default function DocumentPage({ params }: { params: Promise<{ id: string 
     <>
       <Toolbar
         title={
-          <span className="flex items-center gap-2">
+          <span className="flex min-w-0 items-center gap-2">
             <Link
               href="/documents"
               className="-ml-1 rounded-md p-0.5 text-muted-foreground hover:text-foreground"
@@ -123,7 +123,7 @@ export default function DocumentPage({ params }: { params: Promise<{ id: string 
             >
               <ChevronLeft className="size-4" strokeWidth={1.75} />
             </Link>
-            <span className="truncate">{doc?.filename ?? "Document"}</span>
+            <span className="min-w-0 truncate">{doc?.filename ?? "Document"}</span>
             {doc ? <StatusBadge status={doc.status} /> : null}
           </span>
         }

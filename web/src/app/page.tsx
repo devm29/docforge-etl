@@ -22,7 +22,7 @@ export default function OverviewPage() {
   return (
     <>
       <Toolbar title="Overview">{data && data.recent_runs.length === 0 ? null : <RunPipelineButton />}</Toolbar>
-      <main className="mx-auto w-full max-w-6xl space-y-8 px-6 py-8">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
         <PageTitle
           title="Overview"
           subtitle="Every document is parsed, chunked, embedded and extracted once per content change."

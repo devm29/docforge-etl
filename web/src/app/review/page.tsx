@@ -65,7 +65,7 @@ export default function ReviewPage() {
           aria-label="Review queue"
         >
           <div className="px-4 pt-5 pb-3">
-            <h2 className="text-[22px] leading-7 font-semibold tracking-tight">
+            <h2 className="font-heading text-[24px] leading-8 font-semibold">
               {status === "pending" ? "To review" : status === "approved" ? "Approved" : "Corrected"}
             </h2>
             <p className="text-[13px] text-muted-foreground tabular-nums">
