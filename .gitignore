@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Node
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+.pnpm-debug.log*
+
+# Local runtime state: database clusters, redis, blobs, exports, models
+.local/
+data/
+*.log
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
