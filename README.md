@@ -19,7 +19,6 @@ reprocess only what changed, and trace every extracted value back to the page an
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](web/tsconfig.json)
 [![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-components-111111?logo=shadcnui&logoColor=white)](web/components.json)
 [![mypy](https://img.shields.io/badge/mypy-strict-2A6DB2)](backend/pyproject.toml)
-[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 [Why](#why-this-exists) · [Features](#feature-highlights) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Quickstart](#quickstart) · [API](#api-overview) · [Decisions](#engineering-decisions-and-trade-offs)
@@ -57,7 +56,7 @@ DocForge treats document intelligence as a **data engineering problem**:
 | **Layout-aware parsing** | `Parser` protocol: PDF via pdfplumber (words with boxes, tables), DOCX via python-docx, XLSX and CSV via openpyxl. Everything normalizes into a typed `DocumentModel` of pages, blocks and words, and each box records whether it comes from real layout, reading flow or a cell grid. |
 | **Structure-aware chunking** | Chunks never cross a heading. Tables are chunked separately by rows with the header repeated. Every chunk stores its heading path plus the page and box of each block it came from. |
 | **Schema-locked LLM extraction** | Registered Pydantic models (`Invoice`, `Contract` bundled, more via `SCHEMA_MODULES`) are wrapped in a strict evidence envelope `{value, evidence, source_block, confidence}` and filled by Claude through JSON-schema structured outputs. Validation failures trigger up to `EXTRACTION_MAX_REPAIRS` repair attempts. |
-| **Offline deterministic extractor** | With no API key, a rules-based provider follows the same envelope and repair contract, so the demo, tests and CI run with no network and no cost. |
+| **Offline deterministic extractor** | With no API key, a rules-based provider follows the same envelope and repair contract, so the demo and the test suite run with no network and no cost. |
 | **Grounded confidence** | Each value is located on the page (exact match, fuzzy match, block match or none) and blended with the model's own confidence, with penalties for repaired values and open validation issues. |
 | **Human-in-the-loop review** | Low-confidence and invalid fields become review items. Reviewers approve or correct values; edits are type-checked against the field annotation, and the whole record is re-validated before it is approved into the entity tables. |
 | **DAG runner with retries and a DLQ** | Stages form a DAG that runs level by level (chunk and extract run concurrently). Exponential backoff with full jitter, permanent and retryable errors told apart, a dead-letter table with one-click replay, and a reaper that re-enqueues stalled runs. |
@@ -67,15 +66,17 @@ DocForge treats document intelligence as a **data engineering problem**:
 
 ## Screenshots
 
+All screenshots come from `make up` with the bundled sample corpus and the offline extractor, captured with Playwright at 1440 x 900 (desktop) and 390 x 844 (mobile).
+
 **Overview.** Spend, savings from incrementality, stage-cache hits and the dead-letter queue at a glance.
 
 ![Overview dashboard with spend and savings tiles, recent runs, stage-cache stats and a dead-letter alert](docs/screenshots/overview-light.png)
 
-**Review queue.** A total that breaks `total == subtotal + tax`, shown with its rule, evidence and source box.
+**Review queue.** A field below the confidence threshold or failing a schema rule, shown with its evidence quote and source box.
 
-![Review queue with a total that fails validation, its evidence quote and the highlighted source box](docs/screenshots/review-light.png)
+![Review queue with a flagged field, its evidence quote and the highlighted source box](docs/screenshots/review-light.png)
 
-**Run ledger.** A forced reprocess: parse, chunk, embed and extract are all cache hits, so $0.63 of LLM spend is avoided.
+**Run ledger.** A forced reprocess: parse, chunk, embed and extract are all cache hits, so the LLM spend of the first load is avoided.
 
 ![Run detail for a forced reprocess with cache hits on every stage after detect](docs/screenshots/run-cached-light.png)
 
@@ -83,9 +84,9 @@ DocForge treats document intelligence as a **data engineering problem**:
 
 ![Run timeline with per-document stage bars and one dead-lettered document](docs/screenshots/run-dead-letter-dark.png)
 
-**Chunks and repair loop.** Heading-aware chunks over a DOCX contract, each mapped back to its blocks, plus the validation errors the first extraction attempt was repaired from.
+**Chunks.** Heading-aware chunks over a DOCX contract, each mapped back to the blocks it came from.
 
-![Chunk lineage overlay on a DOCX contract beside the repair-loop panel](docs/screenshots/chunks-light.png)
+![Chunk lineage overlay on a DOCX contract beside the chunk list](docs/screenshots/chunks-light.png)
 
 **Semantic search.** The RAG read path: pgvector cosine search over current chunks, with heading path and page.
 
@@ -94,6 +95,15 @@ DocForge treats document intelligence as a **data engineering problem**:
 **Documents.** Every tracked document with its extraction status, average grounded confidence and version count.
 
 ![Documents list with extraction status, confidence and version count per document](docs/screenshots/documents-light.png)
+
+**On a phone.** The sidebar collapses into a sheet, the documents table drops to name and status, and the provenance inspector stacks under the page.
+
+<p>
+  <img src="docs/screenshots/overview-mobile.png" width="24%" alt="Overview on a 390px-wide screen" />
+  <img src="docs/screenshots/documents-mobile.png" width="24%" alt="Documents list on a 390px-wide screen" />
+  <img src="docs/screenshots/provenance-mobile.png" width="24%" alt="Provenance viewer on a 390px-wide screen" />
+  <img src="docs/screenshots/review-mobile.png" width="24%" alt="Review queue on a 390px-wide screen" />
+</p>
 
 ## Architecture
 
@@ -417,7 +427,8 @@ erDiagram
 | Sources | Local filesystem, aioboto3 for S3 and MinIO | Same `SourceConnector` protocol for both |
 | Export | pyarrow (Parquet) | Columnar, typed hand-off to a warehouse or notebook |
 | Web | Next.js 15 App Router, TypeScript strict, shadcn/ui, TanStack Query, Zod, react-pdf | Runtime-validated API responses; a PDF canvas with an absolutely positioned highlight layer |
-| Quality | ruff, mypy `--strict` (pydantic plugin), pytest, ESLint, Vitest, GitHub Actions | 96 backend tests (unit plus Postgres integration) and 18 web tests |
+| Type | IBM Plex Sans and Mono, Source Serif 4 (self-hosted via Fontsource) | Builds work offline; serif page titles, mono for hashes and amounts |
+| Quality | ruff, mypy `--strict` (pydantic plugin), pytest, ESLint, Vitest | 111 backend tests (unit plus Postgres integration) and 22 web tests |
 
 ## Engineering decisions and trade-offs
 
@@ -477,7 +488,7 @@ docforge-etl/
 ├── sample-corpus/                 # generated invoices (PDF, XLSX), contracts (DOCX, PDF), CSV, broken scan
 ├── scripts/                       # local-infra.sh (Postgres + Redis without Docker)
 ├── docs/screenshots/
-├── docker-compose.yml             # postgres (pgvector), redis, minio + seed, api, worker, web
+├── docker-compose.yml             # postgres (pgvector), redis, s3 (moto) + seed, api, worker, web
 └── Makefile
 ```
 
@@ -485,7 +496,7 @@ docforge-etl/
 
 ### Local (no Docker)
 
-Requirements: Python 3.12+ (the Makefile defaults to `python3.13`; override with `PYTHON=`), Node 22+ with pnpm 9, Redis, and PostgreSQL 16 with the [pgvector](https://github.com/pgvector/pgvector) extension available to `pg_ctl`.
+Requirements: Python 3.12 (`.python-version`; the Makefile uses `python3.12`, override with `PYTHON=`), Node 22 (`web/.nvmrc`) with pnpm 10 via `corepack enable` (pinned in `web/package.json`), Redis, and PostgreSQL 16 with the [pgvector](https://github.com/pgvector/pgvector) extension available to `pg_ctl`.
 
 ```bash
 make install    # backend/.venv with dev + fastembed extras, and pnpm install for web/
@@ -526,11 +537,11 @@ To extract with Claude instead of the offline provider, set `ANTHROPIC_API_KEY` 
 
 ```bash
 cp .env.example .env    # optional: ANTHROPIC_API_KEY, DOCFORGE_API_TOKEN
-make up                 # postgres (pgvector), redis, minio + bucket seed, api, worker, web; then seeds demo data
+make up                 # postgres (pgvector), redis, s3 (moto) + bucket seed, api, worker, web; then seeds demo data
 make down
 ```
 
-In Compose, the API requires a bearer token (`DOCFORGE_API_TOKEN`, default `change-me-local-token`), which the web container adds server-side. MinIO is mirrored from `sample-corpus/` and registered as the `s3` source, and the worker's scheduled scan is enabled.
+In Compose, the API requires a bearer token (`DOCFORGE_API_TOKEN`, default `change-me-local-token`), which the web container adds server-side. An in-memory [moto](https://github.com/getmoto/moto) S3 API stands in for S3: the `s3-seed` job mirrors `sample-corpus/` into the `docforge-inbox` bucket, which is registered as the `s3` source, and the worker's scheduled scan is enabled. Its credentials (`docforge` / `docforge-secret`) are local placeholders, as are the Postgres and Redis passwords. The first `make up` builds both images, which takes several minutes; the API is then on http://localhost:8103 and the web app on http://localhost:3103.
 
 ## Configuration
 
@@ -544,6 +555,7 @@ All settings are read by `docforge.config.Settings` from the environment or `.en
 | `API_TOKENS` | unset | JSON map of bearer token to reviewer name. Unset: writes accepted from loopback only. Required when `ENVIRONMENT=production` |
 | `FS_SOURCE_ROOT` | `./data/inbox` | Folder the `fs` source reads |
 | `DATA_DIR` | `./data` | Blobs, Parquet exports, model cache |
+| `ALEMBIC_CONFIG` | `backend/alembic.ini` | Migration config used by `docforge migrate` and `seed`; the image sets `/app/alembic.ini` |
 | `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_PREFIX`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | unset, `docforge-inbox` | Enables the `s3` source when an endpoint or key is set |
 | `LLM_PROVIDER` | `auto` | `auto` uses Claude when `ANTHROPIC_API_KEY` is set, `offline` otherwise; or force `anthropic` / `offline` |
 | `ANTHROPIC_API_KEY` | unset | Claude API key |
@@ -593,12 +605,12 @@ Set `SCHEMA_MODULES=["my_company.schemas"]`. A schema's version is a hash of its
 ## Testing
 
 ```bash
-make lint typecheck test build    # what CI runs
+make check    # lint, typecheck, test and build
 ```
 
-- **Backend:** `ruff`, `mypy --strict` over `src` and `tests`, and 109 pytest tests. Unit tests cover parsers, layout, the chunker, the envelope, grounding, confidence, the repair loop, the Anthropic provider request shape, sources (including S3 through moto), the DAG runner (keys, caching, retries, halts) and worker retry logic. Integration tests run the full pipeline and the API against a real Postgres, plus recovery scenarios: a scan that crashed mid-way, a load that committed before a crash, an older version finishing late, concurrent runs on one source, idempotent finalize and the reaper restarting a lost run.
-- **Integration database:** `TEST_DATABASE_URL` (default `postgresql+asyncpg://docforge@localhost:5503/docforge_test`, created on demand). Run `make infra` first. Without Postgres the integration tests skip; with `CI=true` they fail instead.
-- **Web:** ESLint, `tsc --noEmit` in strict mode, and Vitest for geometry, API schemas, review value parsing, keyboard shortcuts and the review detail component.
+- **Backend:** `ruff`, `mypy --strict` over `src` and `tests`, and 111 pytest tests. Unit tests cover parsers, layout, the chunker, the envelope, grounding, confidence, the repair loop, the Anthropic provider request shape, sources (including S3 through moto), the DAG runner (keys, caching, retries, halts) and worker retry logic. Integration tests run the full pipeline and the API against a real Postgres, plus recovery scenarios: a scan that crashed mid-way, a load that committed before a crash, an older version finishing late, concurrent runs on one source, idempotent finalize and the reaper restarting a lost run.
+- **Integration database:** `TEST_DATABASE_URL` (default `postgresql+asyncpg://docforge@localhost:5503/docforge_test`, created on demand). Run `make infra` first. Without Postgres the integration tests skip; with `REQUIRE_TEST_DATABASE=1` they fail instead.
+- **Web:** ESLint, `tsc --noEmit` in strict mode, and Vitest for geometry, API schemas, review value parsing, keyboard shortcuts, the review detail component and the load-error state.
 
 ## API overview
 
@@ -628,9 +640,65 @@ Interactive docs at `http://localhost:8103/docs`. Every route is under `/api`; t
 | `GET` | `/dead-letters` | Dead-lettered versions by `status` |
 | `POST` | `/dead-letters/{id}/replay` | **Write.** Re-run the failed version in a new single-document run |
 
+### Examples
+
+Captured from the Compose stack after `make up` (IDs shortened, long arrays trimmed). Compose requires the bearer token for writes; locally without `API_TOKENS`, loopback callers can drop the header.
+
+Start a run over the S3 bucket. A second request while it is queued gets a 409 instead of a duplicate scan, and a write without the token gets a 401:
+
 ```bash
-curl -s -X POST localhost:8103/api/runs -H 'content-type: application/json' -d '{"force": false}'
-curl -s 'localhost:8103/api/search?q=late%20payment%20interest&limit=3'
+curl -s -X POST localhost:8103/api/runs \
+  -H 'authorization: Bearer change-me-local-token' -H 'content-type: application/json' \
+  -d '{"source": "s3"}'
+```
+
+```json
+{"id": "a3f2d62f-…", "trigger": "api", "source": "s3", "prefix": "", "force": false,
+ "bypass_cache": false, "status": "queued", "pipeline_version": "1012368b0988b05b",
+ "docs_seen": 0, "docs_changed": 0, "cost_usd": 0.0, "cost_saved_usd": 0.0, "has_export": false, …}
+```
+
+```json
+{"error": {"code": "conflict", "message": "run a3f2d62f-… is already queued for source 's3'"}}
+```
+
+The same 14 files were already processed from the local folder, so every stage after detect is a cache hit (`GET /api/runs/a3f2d62f-…`):
+
+```json
+{"run": {"status": "partial", "docs_seen": 14, "docs_changed": 14, "docs_succeeded": 13, "docs_failed": 1,
+         "cost_usd": 0.0, "cost_saved_usd": 0.631964, "cost_estimated": true, …},
+ "stages": [{"stage": "detect", "executed": 14, "cached": 0, …}, …]}
+```
+
+Semantic search over current chunks:
+
+```bash
+curl -s 'localhost:8103/api/search?q=late%20payment%20interest&limit=2'
+```
+
+```json
+{"query": "late payment interest", "model": "fastembed:BAAI/bge-small-en-v1.5",
+ "hits": [{"document": {"filename": "helios-master-services-agreement.docx", "kind": "contract", …},
+           "score": 0.6865,
+           "text": "Customer will pay total fees of $486,000.00 over the initial term, invoiced monthly in arrears. …\n\nInvoices are payable within thirty (30) days. Late amounts accrue interest at 1% per month.",
+           "heading_path": ["Master Services Agreement", "3. Fees and Payment"], "page_start": 1,
+           "spans": [{"block_id": "p1-b9", "page": 1, "bbox": {"x0": 72.0, "top": 389.05, "x1": 540.0, "bottom": 418.75}}, …]},
+          …]}
+```
+
+Review is gated by the schema. Approving the Brightline total, which breaks `total == subtotal + tax`, is refused, and an edit is type-checked first:
+
+```bash
+curl -s -X POST localhost:8103/api/reviews/a682441b-…/approve \
+  -H 'authorization: Bearer change-me-local-token' -H 'content-type: application/json' -d '{}'
+```
+
+```json
+{"error": {"code": "invalid_request", "message": "the record would still fail validation (total: total 6497.40 does not equal subtotal 6322.40 + tax 0.00 = 6322.40). Edit the value so it satisfies the rule."}}
+```
+
+```json
+{"error": {"code": "invalid_request", "message": "total: Input should be a valid decimal"}}
 ```
 
 ## Roadmap
