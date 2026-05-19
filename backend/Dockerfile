@@ -2,7 +2,6 @@ FROM python:3.12-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
@@ -11,7 +10,8 @@ RUN useradd --create-home --uid 10001 docforge
 
 COPY backend/pyproject.toml ./
 COPY backend/src ./src
-RUN pip install ".[fastembed]"
+# The cache mount keeps downloaded wheels between rebuilds without adding them to the image.
+RUN --mount=type=cache,target=/root/.cache/pip pip install ".[fastembed]"
 
 COPY backend/alembic.ini ./
 COPY backend/alembic ./alembic
