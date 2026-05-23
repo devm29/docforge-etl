@@ -1,0 +1,10 @@
+vendor_id,vendor_name,category,payment_terms,country,active
+V-1001,Northwind Office Supply,Office supplies,Net 30,US,yes
+V-1002,Helios Cloud Services,Cloud infrastructure,Net 30,US,yes
+V-1003,Brightline Logistics,Freight,Net 30,US,yes
+V-1004,Quantum Print Co.,Marketing,Due on receipt,US,yes
+V-1005,Atlas Facilities Management,Facilities,Net 30,US,yes
+V-1006,Bluebird Catering,Events,Net 14,US,yes
+V-1007,Cedar & Pine Legal LLP,Legal,Net 30,US,yes
+V-1008,Sierra Components Ltd.,Hardware,Net 45,CA,yes
+V-1009,Orion Labs LLC,R&D partner,n/a,US,no
