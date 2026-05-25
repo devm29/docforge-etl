@@ -1,0 +1,10 @@
+**/.venv
+**/node_modules
+**/.next
+**/__pycache__
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+.local
+data
+web
